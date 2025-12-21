@@ -14,6 +14,10 @@ public class ClientHandler implements Runnable {
         this.socket = socket;
     }
 
+    public String getClientInfo() {
+        return "Client: " + clientName;
+    }
+
     @Override
     public void run() {
         try {
@@ -42,7 +46,7 @@ public class ClientHandler implements Runnable {
             case Protocol.CMD_HELLO:
                 if (parts.length > 1) {
                     this.clientName = parts[1];
-                    System.out.println(">>> Client đã định danh: " + clientName);
+                    System.out.println(">>> Client mới kết nối: " + clientName);
                 }
                 break;
 
@@ -61,5 +65,17 @@ public class ClientHandler implements Runnable {
         }
         // Gọi ngược về Server để xóa khỏi danh sách
         MonitorServer.removeClient(this);
+    }
+
+    public void sendMonitorRequest(String path) {
+        if (out != null) {
+            // Protocol: MONITOR_REQ;Path
+            String command = Protocol.CMD_MONITOR_REQ + Protocol.SEPARATOR + path;
+
+            // Gửi cho client
+            out.println(command);
+
+            System.out.println(">>> Đã gửi lệnh yêu cầu giám sát tới " + clientName);
+        }
     }
 }
