@@ -6,16 +6,23 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
+    private MonitorServer server;
     private PrintWriter out;
     private BufferedReader in;
     private String clientName = "Unknown";
+    private String currentPath = "";
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, MonitorServer server) {
         this.socket = socket;
+        this.server = server;
     }
 
     public String getClientInfo() {
         return "Client: " + clientName;
+    }
+
+    public String getMonitoredPath() {
+        return (currentPath == null) ? "" : currentPath;
     }
 
     @Override
@@ -32,7 +39,7 @@ public class ClientHandler implements Runnable {
             }
 
         } catch (IOException e) {
-            System.out.println("Client ngắt kết nối: " + clientName);
+            server.log(">>> Client ngắt kết nối: " + clientName);
         } finally {
             closeConnection();
         }
@@ -46,35 +53,51 @@ public class ClientHandler implements Runnable {
             case Protocol.CMD_HELLO:
                 if (parts.length > 1) {
                     this.clientName = parts[1];
-                    System.out.println(">>> Client mới kết nối: " + clientName);
+                    server.updateClientList();
+                    server.log(">>> Client mới kết nối: " + clientName);
                 }
                 break;
 
             case Protocol.CMD_NOTIFY:
                 // Logic xử lý thông báo
-                System.out.println(">>> Nhận thông báo thay đổi từ " + clientName);
+                if (parts.length >= 3) {
+                    String action = parts[1];
+                    String path = parts[2];
+
+                    server.log(">>> [" + clientName + "] " + action + " -> " + path);
+                }
+                else {
+                    // Phòng trường hợp gửi thiếu thông tin
+                    server.log(">>> Lỗi: Nhận thông báo không hợp lệ từ " + clientName);
+                }
                 break;
 
             case Protocol.CMD_MONITOR_RES:
                 String result = parts[1];
                 if ("OK".equals(result)) {
-                    System.out.println(">>> [" + clientName + "] Đã kích hoạt giám sát THÀNH CÔNG!");
+                    server.log(">>> [" + clientName + "] Đã kích hoạt giám sát THÀNH CÔNG!");
                 } else {
                     String reason = (parts.length > 2) ? parts[2] : "Lỗi không xác định";
-                    System.err.println(">>> [" + clientName + "] GIÁM SÁT THẤT BẠI: " + reason);
+                    server.log(">>> [" + clientName + "] GIÁM SÁT THẤT BẠI: " + reason);
                 }
                 break;
         }
     }
 
-    private void closeConnection() {
+    public void sendStopMonitor() {
+        if (out != null) {
+            out.println(Protocol.CMD_STOP_REQ);
+            this.currentPath = "";
+            server.log(">>> Đã gửi lệnh DỪNG giám sát tới " + clientName);
+        }
+    }
+
+    public void closeConnection() {
         try {
             if (socket != null) socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Gọi ngược về Server để xóa khỏi danh sách
-        MonitorServer.removeClient(this);
     }
 
     public void sendMonitorRequest(String path) {
@@ -85,7 +108,13 @@ public class ClientHandler implements Runnable {
             // Gửi cho client
             out.println(command);
 
-            System.out.println(">>> Đã gửi lệnh yêu cầu giám sát tới " + clientName);
+            this.currentPath = path;
+            server.log(">>> Đã gửi lệnh giám sát tới " + clientName);
         }
+    }
+
+    @Override
+    public String toString() {
+        return clientName + " (" + socket.getInetAddress().getHostAddress() + ")";
     }
 }
