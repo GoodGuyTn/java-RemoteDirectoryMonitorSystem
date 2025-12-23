@@ -54,6 +54,16 @@ public class ClientHandler implements Runnable {
                 // Logic xử lý thông báo
                 System.out.println(">>> Nhận thông báo thay đổi từ " + clientName);
                 break;
+
+            case Protocol.CMD_MONITOR_RES:
+                String result = parts[1];
+                if ("OK".equals(result)) {
+                    System.out.println(">>> [" + clientName + "] Đã kích hoạt giám sát THÀNH CÔNG!");
+                } else {
+                    String reason = (parts.length > 2) ? parts[2] : "Lỗi không xác định";
+                    System.err.println(">>> [" + clientName + "] GIÁM SÁT THẤT BẠI: " + reason);
+                }
+                break;
         }
     }
 

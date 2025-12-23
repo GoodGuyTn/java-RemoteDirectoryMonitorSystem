@@ -15,6 +15,10 @@ public class Protocol {
     // Cấu trúc: MONITOR_REQ;D:/ThuMucCanGiamSat
     public static final String CMD_MONITOR_REQ = "MONITOR_REQ";
 
+    // Client trả lời kết quả giám sát (Thành công hay Thất bại)
+    // Cấu trúc: MONITOR_RES;OK hoặc MONITOR_RES;FAIL;Lý do lỗi
+    public static final String CMD_MONITOR_RES = "MONITOR_RES";
+
     // Lệnh dừng giám sát
     public static final String CMD_STOP_REQ = "STOP_REQ";
 
@@ -33,4 +37,6 @@ public class Protocol {
     public static final String ACT_CREATE = "CREATE";
     public static final String ACT_DELETE = "DELETE";
     public static final String ACT_MODIFY = "MODIFY";
+
+
 }

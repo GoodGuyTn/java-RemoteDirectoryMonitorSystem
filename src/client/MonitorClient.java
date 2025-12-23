@@ -3,6 +3,7 @@ package client;
 import common.Protocol;
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.*;
 
 public class MonitorClient {
     private Socket socket;
@@ -50,6 +51,15 @@ public class MonitorClient {
     }
 
     private void startWatcher(String path) {
+        Path pathStr = Paths.get(path);
+        // Kiểm tra xem thư mục có tồn tại không
+        if (!Files.exists(pathStr) || !Files.isDirectory(pathStr)) {
+            System.err.println("Lỗi: Đường dẫn không hợp lệ: " + path);
+            // Gửi LỖI về Server
+            out.println(Protocol.CMD_MONITOR_RES + Protocol.SEPARATOR + "FAIL" + Protocol.SEPARATOR + "Thu muc khong ton tai");
+            return;
+        }
+
         if (currentWatcher != null) {
             currentWatcher.stopWatching();
         }
@@ -58,6 +68,10 @@ public class MonitorClient {
         currentWatcher = new FolderWatcher(path, this);
         watcherThread = new Thread(currentWatcher);
         watcherThread.start();
+
+        // Gửi thông báo THÀNH CÔNG về Server
+        out.println(Protocol.CMD_MONITOR_RES + Protocol.SEPARATOR + "OK");
+        System.out.println("-> Đã bắt đầu giám sát và báo OK về Server.");
     }
 
     public synchronized void sendNotify(String action, String filename) {
