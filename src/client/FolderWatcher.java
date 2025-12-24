@@ -67,6 +67,10 @@ public class FolderWatcher implements Runnable {
                     // Tạo đường dẫn đầy đủ: Thư mục xảy ra sự kiện + Tên file
                     Path fullPath = dir.resolve(fileName);
 
+                    if (kind == ENTRY_MODIFY && Files.isDirectory(fullPath)) {
+                        continue;
+                    }
+
                     // Nếu sự kiện là TẠO MỚI (Create) và nó là THƯ MỤC
                     // -> Ta phải đăng ký giám sát nó luôn
                     if (kind == ENTRY_CREATE) {

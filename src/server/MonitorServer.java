@@ -1,6 +1,5 @@
 package server;
 
-import client.MonitorClient;
 import common.Protocol;
 
 import javax.swing.*;
@@ -182,7 +181,7 @@ public class MonitorServer extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            MonitorClient monitorClient = new MonitorClient();
+            MonitorServer monitorServer = new MonitorServer();
         });
     }
 }
