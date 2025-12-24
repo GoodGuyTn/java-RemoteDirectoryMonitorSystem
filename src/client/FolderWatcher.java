@@ -36,7 +36,7 @@ public class FolderWatcher implements Runnable {
 
         System.out.println(">>> Đang bắt đầu giám sát: " + rootPathStr);
 
-        try {
+        try { // Tham khảo
             watchService = FileSystems.getDefault().newWatchService();
 
             registerAll(rootPath);
